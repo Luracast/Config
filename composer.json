@@ -9,6 +9,9 @@
             "email": "arul@luracast.com"
         }
     ],
+    "require": {
+        "php": ">=5.3.0"
+    },
     "require-dev": {
         "phpunit/phpunit": "*"
     },
