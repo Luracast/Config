@@ -1,5 +1,7 @@
 Config
 ======
+[![Build Status](https://travis-ci.org/Luracast/Config.png)](https://travis-ci.org/Luracast/Config)
+
 Config class for loading configuration arrays from various files and provide easy access to nested properties with dot syntax
 
 Lazy loads configuration information when requested using `Config::get('file.property')` or `$config['file.property']`
