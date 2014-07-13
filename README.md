@@ -1,6 +1,6 @@
 Config
 ======
-[![Build Status](https://travis-ci.org/Luracast/Config.png)](https://travis-ci.org/Luracast/Config)
+[![Build Status](https://travis-ci.org/Luracast/Config.svg?branch=master)](https://travis-ci.org/Luracast/Config)
 
 Config class for loading configuration arrays from various files and provide easy access to nested properties with dot syntax
 
