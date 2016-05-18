@@ -46,7 +46,7 @@ class Config implements ArrayAccess
     /**
      * Initialize the Config instance for a specific target path
      *
-     * @param string      $path        folder path for the config files
+     * @param string $path folder path for the config files
      * @param string|null $environment path for fine tuning config files with overriding properties
      *
      * @return Config
@@ -60,14 +60,30 @@ class Config implements ArrayAccess
             static::$instance->environment = $environment;
             static::$instance->container = array();
         }
+
         return static::$instance;
     }
 
-    public static function get($name)
+    public static function get($name, $default = null)
     {
         if (!static::$instance)
             throw new \BadFunctionCallException('Config::init($path, $environment) should to be called first');
-        return static::$instance->offsetGet($name);
+
+        return static::$instance->offsetGet($name) ?: $default;
+    }
+
+    public static function set($key, $value)
+    {
+        if (!static::$instance)
+            throw new \BadFunctionCallException('Config::init($path, $environment) should to be called first');
+        $instance = static::$instance;
+        if (is_array($key)) {
+            foreach ($key as $innerKey => $innerValue) {
+                static::arraySet($instance->container, $innerKey, $innerValue);
+            }
+        } else {
+            static::arraySet($instance->container, $key, $value);
+        }
     }
 
     public function offsetExists($offset)
@@ -84,6 +100,7 @@ class Config implements ArrayAccess
                 $p = $p[$name];
             }
             $this->container[$offset] = $p;
+
             return true;
         } else {
             //lazy load the config file
@@ -93,9 +110,11 @@ class Config implements ArrayAccess
                 if (!empty($this->environment) && is_readable($file = "$this->path/$this->environment/$name.php")) {
                     $this->container[$name] = array_replace_recursive($this->container[$name], (include $file));
                 }
+
                 return $this->offsetExists($offset);
             }
         }
+
         return false;
     }
 
@@ -119,5 +138,42 @@ class Config implements ArrayAccess
     public function offsetUnset($offset)
     {
         $this->container[$offset] = null;
+    }
+
+    /**
+     * Set an array item to a given value using "dot" notation.
+     *
+     * If no key is given to the method, the entire array will be replaced.
+     *
+     * @param  array $array
+     * @param  string $key
+     * @param  mixed $value
+     *
+     * @return array
+     */
+    private static function arraySet(&$array, $key, $value)
+    {
+        if (is_null($key)) {
+            return $array = $value;
+        }
+
+        $keys = explode('.', $key);
+
+        while (count($keys) > 1) {
+            $key = array_shift($keys);
+
+            // If the key doesn't exist at this depth, we will just create an empty array
+            // to hold the next value, allowing us to create the arrays to hold final
+            // values at the correct depth. Then we'll keep digging into the array.
+            if (!isset($array[$key]) || !is_array($array[$key])) {
+                $array[$key] = array();
+            }
+
+            $array = &$array[$key];
+        }
+
+        $array[array_shift($keys)] = $value;
+
+        return $array;
     }
 }
