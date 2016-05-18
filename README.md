@@ -12,7 +12,7 @@ Lazy loads configuration information when requested using `Config::get('file.pro
 
 For example :-
 
-    Config::get['database.connections.sqlite']
+    Config::get('database.connections.sqlite')
 
 will load `database.php` which returns an array that contains connections property which contains the sqlite property
 value of which will be returned. `$path` given in the constructor is the path it will look for the file.
