@@ -1,4 +1,5 @@
-<?php namespace Luracast\Config;
+<?php
+namespace Luracast\Config;
 
 use ArrayAccess;
 
@@ -25,14 +26,13 @@ use ArrayAccess;
  */
 class Config implements ArrayAccess
 {
+    /** @var  static */
+    protected static $instance;
     protected $container = array();
     /** @var  string */
     protected $path;
     /** @var  string */
     protected $environment;
-
-    /** @var  static */
-    protected static $instance;
 
     public function __construct($path, $environment = null)
     {
@@ -53,9 +53,9 @@ class Config implements ArrayAccess
      */
     public static function init($path, $environment = null)
     {
-        if (!static::$instance)
+        if (!static::$instance) {
             static::$instance = new Config($path, $environment);
-        else {
+        } else {
             static::$instance->path = $path;
             static::$instance->environment = $environment;
             static::$instance->container = array();
@@ -66,26 +66,20 @@ class Config implements ArrayAccess
 
     public static function get($name, $default = null)
     {
-        if (!static::$instance)
+        if (!static::$instance) {
             throw new \BadFunctionCallException('Config::init($path, $environment) should to be called first');
+        }
 
         return static::$instance->offsetGet($name) ?: $default;
     }
 
-    public static function set($key, $value)
+    #[\ReturnTypeWillChange]
+    public function offsetGet($offset)
     {
-        if (!static::$instance)
-            throw new \BadFunctionCallException('Config::init($path, $environment) should to be called first');
-        $instance = static::$instance;
-        if (is_array($key)) {
-            foreach ($key as $innerKey => $innerValue) {
-                static::arraySet($instance->container, $innerKey, $innerValue);
-            }
-        } else {
-            static::arraySet($instance->container, $key, $value);
-        }
+        return $this->offsetExists($offset) ? $this->container[$offset] : null;
     }
 
+    #[\ReturnTypeWillChange]
     public function offsetExists($offset)
     {
         if (isset($this->container[$offset])) {
@@ -95,8 +89,9 @@ class Config implements ArrayAccess
         if (isset($this->container[$name])) {
             $p = $this->container[$name];
             while (false !== ($name = strtok('.'))) {
-                if (!isset($p[$name]))
+                if (!isset($p[$name])) {
                     return false;
+                }
                 $p = $p[$name];
             }
             $this->container[$offset] = $p;
@@ -118,26 +113,20 @@ class Config implements ArrayAccess
         return false;
     }
 
-
-    public function offsetGet($offset)
+    public static function set($key, $value)
     {
-        return $this->offsetExists($offset) ? $this->container[$offset] : null;
-    }
-
-
-    public function offsetSet($offset, $value)
-    {
-        if (is_null($offset)) {
-            $this->container[] = $value;
-        } else {
-            $this->container[$offset] = $value;
+        if (!static::$instance) {
+            throw new \BadFunctionCallException('Config::init($path, $environment) should to be called first');
         }
-    }
-
-
-    public function offsetUnset($offset)
-    {
-        $this->container[$offset] = null;
+        $instance = static::$instance;
+        //$instance->offsetGet($key);
+        if (is_array($key)) {
+            foreach ($key as $innerKey => $innerValue) {
+                static::arraySet($instance->container, $innerKey, $innerValue);
+            }
+        } else {
+            static::arraySet($instance->container, $key, $value);
+        }
     }
 
     /**
@@ -145,9 +134,9 @@ class Config implements ArrayAccess
      *
      * If no key is given to the method, the entire array will be replaced.
      *
-     * @param  array $array
-     * @param  string $key
-     * @param  mixed $value
+     * @param array $array
+     * @param string $key
+     * @param mixed $value
      *
      * @return array
      */
@@ -175,5 +164,21 @@ class Config implements ArrayAccess
         $array[array_shift($keys)] = $value;
 
         return $array;
+    }
+
+    #[\ReturnTypeWillChange]
+    public function offsetSet($offset, $value)
+    {
+        if (is_null($offset)) {
+            $this->container[] = $value;
+        } else {
+            $this->container[$offset] = $value;
+        }
+    }
+
+    #[\ReturnTypeWillChange]
+    public function offsetUnset($offset)
+    {
+        $this->container[$offset] = null;
     }
 }
