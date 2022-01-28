@@ -1,8 +1,9 @@
 <?php
 
 use Luracast\Config\Config;
+use PHPUnit\Framework\TestCase;
 
-class ConfigTest extends PHPUnit_Framework_TestCase
+class ConfigTest extends TestCase
 {
     public function testLoadConfigFile()
     {
@@ -25,5 +26,12 @@ class ConfigTest extends PHPUnit_Framework_TestCase
         $this->assertArrayHasKey('property', Config::get('file'));
         $this->assertEquals('value', Config::get('file.property'));
     }
+
+    public function testSetNestedProperty()
+    {
+        $path = dirname(__DIR__) . DIRECTORY_SEPARATOR . 'fixtures';
+        Config::init($path);
+        Config::set('file.nested.property', 'value');
+        $this->assertEquals('value', Config::get('file.nested.property'));
+    }
 }
- 
