@@ -1,7 +1,10 @@
 <?php
+
 namespace Luracast\Config;
 
 use ArrayAccess;
+use BadFunctionCallException;
+use Exception;
 
 /**
  * Config class for loading configuration arrays from various files and provide easy
@@ -67,7 +70,7 @@ class Config implements ArrayAccess
     public static function get($name, $default = null)
     {
         if (!static::$instance) {
-            throw new \BadFunctionCallException('Config::init($path, $environment) should to be called first');
+            throw new BadFunctionCallException('Config::init($path, $environment) should to be called first');
         }
 
         return static::$instance->offsetGet($name) ?: $default;
@@ -113,10 +116,25 @@ class Config implements ArrayAccess
         return false;
     }
 
+    /**
+     * @throws Exception
+     */
+    public static function getOrThrow($name)
+    {
+        if (!static::$instance) {
+            throw new BadFunctionCallException('Config::init($path, $environment) should to be called first');
+        }
+        $value = static::$instance->offsetGet($name);
+        if (is_null($value)) {
+            throw new Exception("Missing config option '$name'");
+        }
+        return $value;
+    }
+
     public static function set($key, $value)
     {
         if (!static::$instance) {
-            throw new \BadFunctionCallException('Config::init($path, $environment) should to be called first');
+            throw new BadFunctionCallException('Config::init($path, $environment) should to be called first');
         }
         $instance = static::$instance;
         $instance->offsetGet(is_array($key) ? $key[0] : $key);
