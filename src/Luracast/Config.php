@@ -119,7 +119,7 @@ class Config implements ArrayAccess
             throw new \BadFunctionCallException('Config::init($path, $environment) should to be called first');
         }
         $instance = static::$instance;
-        //$instance->offsetGet($key);
+        $instance->offsetGet(is_array($key) ? $key[0] : $key);
         if (is_array($key)) {
             foreach ($key as $innerKey => $innerValue) {
                 static::arraySet($instance->container, $innerKey, $innerValue);

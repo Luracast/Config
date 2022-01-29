@@ -34,4 +34,21 @@ class ConfigTest extends TestCase
         Config::set('file.nested.property', 'value');
         $this->assertEquals('value', Config::get('file.nested.property'));
     }
+
+    public function testSetNestedPropertyWithArray()
+    {
+        $path = dirname(__DIR__) . DIRECTORY_SEPARATOR . 'fixtures';
+        Config::init($path);
+        Config::set('file.nested.property', ['value']);
+        $this->assertEquals(['value'], Config::get('file.nested.property'));
+    }
+
+    public function testSetNestedPropertyWithArrayAndString()
+    {
+        $path = dirname(__DIR__) . DIRECTORY_SEPARATOR . 'fixtures';
+        Config::init($path);
+        Config::set('file.nested.property', ['value', 'value2']);
+        $this->assertEquals(['value', 'value2'], Config::get('file.nested.property'));
+    }
+
 }
